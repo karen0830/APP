@@ -144,9 +144,9 @@ app.get('/logout', (req, res) => {
   return res.send('Por favor inicie sesión')
 })
 
-app.listen(port, () => {
-console.log(`Example app listening on port ${port}`)
-})
+app.listen(10101, '0.0.0.0', function() {
+  console.log('Example app listening on port 10101');
+});
 
 
 
