@@ -61,7 +61,7 @@ app.post('/interfaz-inicio', (req, res) => {
   let nombres = req.body.nombres;
   let contrasenia = req.body.contrasenia;
   let contra = req.body.contrasenia1;
-  const saltRounds = 10;
+  const saltRounds = 11;
   const salt = bcrypt.genSaltSync(saltRounds);
   // Convertir la contraseña del usuario en un hash
   const hash = bcrypt.hashSync(contrasenia, salt);
