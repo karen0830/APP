@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const cookieParser = require("cookie-parser");
 const sessions = require('express-session');
+const mysql = require('mysql2');
 //le decimos a express que use el paquete cookie parser
 //para trabajar con cookies
 app.use(cookieParser());
@@ -25,19 +26,8 @@ app.use('/public/', express.static('./public')); // Cargar archivos estáticos d
 
 const port = 10101;
 
-const SSHClient = require('ssh2').Client;
-const mysql = require('mysql2');
-
-// Configuración de la conexión SSH
-const sshConfig = {
-  host: '13.92.236.95',
-  port: 22,
-  username: 'MarketShare',
-  password: 'MarketShare123'
-};
-
-// Configuración de la conexión a la base de datos
 const dbConfig = {
+  connectionLimit: 100,
   host: 'localhost',
   user: 'Lopez',
   password: 'Lopez123K123@',
@@ -45,40 +35,7 @@ const dbConfig = {
   debug: false
 };
 
-// Crear una nueva conexión SSH
-const sshConnection = new SSHClient();
-
-// Configuración de la conexión a la base de datos
-let dbConnection;
-
-sshConnection.on('ready', () => {
-  // Establecer un túnel SSH para redirigir el tráfico de la base de datos
-  sshConnection.forwardOut(
-    // Origen de la conexión de base de datos
-    'localhost',
-    // Puerto de la conexión de base de datos
-    0,
-    // Destino del túnel SSH (host y puerto de la base de datos en la máquina virtual)
-    'localhost',
-    3306,
-    (err, stream) => {
-      if (err) throw err;
-
-      // Configurar la conexión a la base de datos a través del túnel SSH
-      dbConnection = mysql.createConnection({
-        ...dbConfig,
-        stream: stream
-      });
-
-      // Realizar operaciones de base de datos usando la conexión dbConnection
-      // ...
-    }
-  );
-});
-
-// Conectar a la máquina virtual a través de SSH
-sshConnection.connect(sshConfig);
-
+const pool = mysql.createPool(dbConfig);
 
 app.get('/', (req, res) => {
   //recogemos la cookie de sesion
@@ -109,7 +66,7 @@ app.post('/interfaz-inicio', (req, res) => {
   // Convertir la contraseña del usuario en un hash
   const hash = bcrypt.hashSync(contrasenia, salt);
   const hash1 = bcrypt.hashSync(contra, salt);
-  dbConnection.query(
+  pool.query(
     "INSERT INTO datos VALUES (?, ?, ?, ?)",
     [nombres, correo, hash, hash1],
     (error) => {
@@ -130,7 +87,7 @@ app.post('/interfaz-inicio', (req, res) => {
       //de login
       let correo = req.body.correo;
       let contrasenia = req.body.contrasenia;
-      dbConnection.query("SELECT contrasenia, nombre FROM datos WHERE correo=?", [correo],
+      pool.query("SELECT contrasenia, nombre FROM datos WHERE correo=?", [correo],
     (error, data) => {
     if (error) throw error;
     //si existe un correo igual al correo que llega en el formulario de login...
