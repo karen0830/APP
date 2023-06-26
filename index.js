@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs'); // Establecer express para utilizar plantillas ejs
 app.use('/public/', express.static('./public')); // Cargar archivos estáticos desde la carpeta 'public'
 
-const port = 10101;
+const port = 3000;
 
 const dbConfig = {
   connectionLimit: 100,
@@ -144,9 +144,10 @@ app.get('/logout', (req, res) => {
   return res.send('Por favor inicie sesión')
 })
 
-app.listen(10101, '0.0.0.0', function() {
-  console.log('Example app listening on port 10101');
+app.listen(port, '13.92.236.95', function() {
+  console.log('Example app listening on port 3000');
 });
+
 
 
 
