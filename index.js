@@ -24,7 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'ejs'); // Establecer express para utilizar plantillas ejs
 app.use('/public/', express.static('./public')); // Cargar archivos estáticos desde la carpeta 'public'
 
-const port = 80;
+const port = 10101;
 
 const dbConfig = {
   connectionLimit: 100,
