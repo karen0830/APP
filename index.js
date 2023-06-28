@@ -144,7 +144,7 @@ app.get('/logout', (req, res) => {
   return res.send('Por favor inicie sesión')
 })
 
-app.listen(port, 'localhost', function() {
+app.listen(port, '0.0.0.0', function() {
   console.log('Example app listening on port 3000');
 });
 
