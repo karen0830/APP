@@ -29,15 +29,15 @@ const port = 10101;
 const dbConfig = {
   connectionLimit: 100,
   host: 'localhost',
-  user: 'Lopez',
-  password: 'Lopez123K123@',
+  user: 'root',
+  password: 'Lopez1234',
   database: 'karen',
   debug: false
 };
 
 const pool = mysql.createPool(dbConfig);
 
-app.get('/', (req, res) => {
+app.get('/inicio-sesion', (req, res) => {
   //recogemos la cookie de sesion
   let session = req.session;
   //verificamos si existe la sesion llamada correo y además que no haya expirado y también que
@@ -50,7 +50,7 @@ app.get('/', (req, res) => {
   //cliente
   })
 
-app.get('/interfaz-inicio', (req, res) => {
+app.get('/', (req, res) => {
   // Renderizar la plantilla llamada 'interfaz-inicio' que contiene el formulario de registro
   res.render('interfaz-inicio');
 });
@@ -87,32 +87,52 @@ app.post('/interfaz-inicio', (req, res) => {
       //de login
       let correo = req.body.correo;
       let contrasenia = req.body.contrasenia;
-      pool.query("SELECT contrasenia, nombre FROM datos WHERE correo=?", [correo],
+    pool.query("SELECT contrasenia, nombre FROM datos WHERE correo=?", [correo],
     (error, data) => {
-    if (error) throw error;
-    //si existe un correo igual al correo que llega en el formulario de login...
-    if (data.length > 0) {
-    let contraseniaEncriptada = data[0].contrasenia;
-    //si la contraseña enviada por el usuario, al comparar su hash generado,
-    //coincide con el hash guardado en la base de datos del usuario, hacemos login
-    if (bcrypt.compareSync(contrasenia, contraseniaEncriptada)) {
-    //recogemos session de la solicitud del usuario
-    let session = req.session;
-    //iniciamos sesion al usuario
-    //en este caso la llamamos correo
-    //y ella contiene el email del usuario
-    //encriptado
-    session.correo = correo;
-    //también agregamos los nombres del Usuario a la sesión
-    session.nombres = `${data[0].nombre}`
-    return res.redirect('/');
+      if (error) throw error;
+      //si existe un correo igual al correo que llega en el formulario de login...
+      console.log(data.length);
+      if (data.length > 0) {
+      let contraseniaEncriptada = data[0].contrasenia;
+      //si la contraseña enviada por el usuario, al comparar su hash generado,
+      //coincide con el hash guardado en la base de datos del usuario, hacemos login
+      if (bcrypt.compareSync(contrasenia, contraseniaEncriptada)) {
+      //recogemos session de la solicitud del usuario
+      let session = req.session;
+      //iniciamos sesion al usuario
+      //en este caso la llamamos correo
+      //y ella contiene el email del usuario
+      //encriptado
+      session.correo = correo;
+      //también agregamos los nombres del Usuario a la sesión
+      session.nombres = `${data[0].nombre}`
+      return res.redirect('/inicio-sesion');
+      }
+      //si la contraseña enviada por el usuario es incorrecta...
+      return  res.render("interfaz-inicio", {
+        alert: true,
+        alertTitle: "Error",
+        alertMessage: "Contraseña incorrecta",
+        alertIcon: "error",
+        showConfirmButton: true,
+        timer: false,
+        ruta: "interfaz-inicio",
+      });
+    }else if(data.length == 0){
+      //si no existe el usuario en la base de datos...
+      return  res.render("interfaz-inicio", {
+        alert: true,
+        alertTitle: "Error",
+        alertMessage: "El usuario ingresado no existe",
+        alertIcon: "error",
+        showConfirmButton: true,
+        timer: false,
+        ruta: "interfaz-inicio",
+      });
     }
-    //si la contraseña enviada por el usuario es incorrecta...
-    return res.send('Usuario o contraseña incorrecta');
-    }
-    //si no existe el usuario en la base de datos...
-    return res.send('Usuario o contraseña incorrecta');
-    });
+    
+    
+  });
 });
 
 app.get('/test-cookies', (req, res) => {
